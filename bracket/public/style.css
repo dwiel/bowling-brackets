@@ -1,0 +1,9 @@
+#names_col {
+  float: left;
+  width: 400px;
+  border-right: 1px solid black;
+}
+
+#bracket_col_title {
+  text-align: center;
+}

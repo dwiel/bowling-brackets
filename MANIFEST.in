@@ -1,0 +1,3 @@
+include bracket/config/deployment.ini_tmpl
+recursive-include bracket/public *
+recursive-include bracket/templates *
