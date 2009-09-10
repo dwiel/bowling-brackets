@@ -2,59 +2,74 @@
 <script src="/js/json2.js" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="/style.css" />
 
-<div id="names_col">
-  <table id="names">
-    <tr id="table_row-1">
-      <th>
-        Name
-      </th>
-      <th>
-        # of brackets
-      </th>
-    </tr>
-    <tr>
-      <th>
-        Total:
-      </th>
-      <th>
-        <div id="total" /></div>
-      </th>
-    </tr>
-  </table>
-  <br>
-  <hr>
-  <br>
-  <table>
-    <tr>
-      <td>Name:</td>
-      <td><input type="text" id="name" /></td>
-    </tr>
-    <tr>
-      <td># of Brackets:</td>
-      <td><input type="text" id="number" /></td>
-    </tr>
-  </table>
-  <a href="javascript:create_new_person()">add</a>
-  <a href="javascript:clear()">clear</a><br>
-  <br>
-  <hr>
-  <br>
-  <table>
-    <tr>
-      <td># of people in each bracket:</td>
-      <td><input type="text" id="bracket_size" value="8"/></td>
-    </tr>
-    <tr>
-      <td># of brackets:</td>
-      <td><input type="text" id="numbrackets" value="6"/></td>
-    </tr>
-  </table>
-  <a href="javascript:make_bracket()">make bracket</a>
-</div>
-<div id="bracket_col">
-  <div id="bracket_col_title"><b>Brackets<b></div>
-  <div id="log" />
-</div>
+<table>
+  <tr>
+    <th style="width;50%">
+      People
+    </th>
+    <th style="width:50%">
+      Brackets
+    </th>
+  </tr>
+  <tr>
+    <td>
+      <div id="names_col">
+        <table id="names">
+          <tr id="table_row-1">
+            <th>
+              Name
+            </th>
+            <th>
+              # of brackets
+            </th>
+          </tr>
+          <tr>
+            <th>
+              Total:
+            </th>
+            <th>
+              <div id="total" /></div>
+            </th>
+          </tr>
+        </table>
+        <br>
+        <hr>
+        <br>
+        <table>
+          <tr>
+            <td>Name:</td>
+            <td><input type="text" id="name" /></td>
+          </tr>
+          <tr>
+            <td># of Brackets:</td>
+            <td><input type="text" id="number" /></td>
+          </tr>
+        </table>
+        <a href="javascript:create_new_person()">add</a>
+        <a href="javascript:clear()">clear</a><br>
+        <br>
+        <hr>
+        <br>
+        <table>
+          <tr>
+            <td># of people in each bracket:</td>
+            <td><input type="text" id="bracket_size" value="8"/></td>
+          </tr>
+          <tr>
+            <td># of brackets:</td>
+            <td><input type="text" id="numbrackets" value="6"/></td>
+          </tr>
+        </table>
+        <a href="javascript:make_bracket()">make bracket</a>
+      </div>
+    </td>
+    <td>
+      <div id="bracket_col">
+        <div id="log" />
+      </div>
+    </td>
+  </tr>
+</table>
 
 
 <script>
@@ -113,6 +128,10 @@ function add_person(name) {
   // row = '<tr class="table_row" id="table_row'+numpeople+'"><td><input class="name"  value="'+name+'" id="name'+numpeople+'" /></td><td><input class="number"  value="'+$('#number').val()+'" id="number'+numpeople+'" /></td></tr>';
   $('#table_row'+insertAfterId).after( row );
   numpeople += 1;
+  
+  $('.number').change(function () {
+    update_total();
+  });
   
   update_total();
 }
