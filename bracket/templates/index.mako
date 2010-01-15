@@ -47,6 +47,7 @@
         </table>
         <a href="javascript:create_new_person()">add</a>
         <a href="javascript:clear()">clear</a><br>
+        <a href="javascript:toggle_remove_names()">remove names</a><br>
         <br>
         <hr>
         <br>
@@ -124,9 +125,10 @@ function add_person(name) {
     insertAfterId = people_ids[names[insertAfterIndex]];
   }
 
-  row = '<tr class="table_row" id="table_row'+numpeople+'"><td><div class="name" id="name'+numpeople+'">'+name+'</div></td><td><input class="number"  value="'+$('#number').val()+'" id="number'+numpeople+'" /></td></tr>';
+  row = '<tr class="table_row" id="table_row'+numpeople+'"><td><div class="name" id="name'+numpeople+'">'+name+'</div></td><td><input class="number" value="'+$('#number').val()+'" id="number'+numpeople+'" /></td><td><a class="del" href="javascript:del('+numpeople+')">del</a></td></tr>';
   // row = '<tr class="table_row" id="table_row'+numpeople+'"><td><input class="name"  value="'+name+'" id="name'+numpeople+'" /></td><td><input class="number"  value="'+$('#number').val()+'" id="number'+numpeople+'" /></td></tr>';
   $('#table_row'+insertAfterId).after( row );
+  $('.del').hide();
   numpeople += 1;
   
   $('.number').change(function () {
@@ -134,6 +136,16 @@ function add_person(name) {
   });
   
   update_total();
+}
+
+function del(num) {
+  $('#table_row'+num).hide();
+  name = $('#name'+num).html();
+  $.post('remove_person?name='+name);
+}
+
+function toggle_remove_names() {
+  $('.del').toggle();
 }
 
 function clear() {
