@@ -184,6 +184,7 @@ function make_people_array_id() {
   
 var brackets = [];
 var possible_positions = [];
+var people;
 
 function opponent(bracket_i, i) {
   if(i % 2 == 0) {
@@ -313,8 +314,8 @@ function best(bracket_i, so_far, best_case){
 }
 
 function initialize_brackets() {
-  var numbrackets = $('#numbrackets').val();
-  var bracket_size = $('#bracket_size').val();
+  numbrackets = $('#numbrackets').val();
+  bracket_size = $('#bracket_size').val();
   brackets = []
   for(var i = 0; i < numbrackets; ++i) {
     brackets[i] = [];
@@ -398,12 +399,59 @@ function first_possible_pos_in_bracket(b, so_far) {
   return -1;
 }
 
+function person_in_bracket(b, name) {
+  for(var j = 0; j < bracket_size; ++j) {
+    if(brackets[b][j] == name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function count_so_far(so_far, name) {
+  var total = 0;
+  for(var x in so_far) {
+    if(name == so_far[x]) {
+      total++;
+    }
+  }
+  return total;
+}
+
+// find the open spots, and put this person with the opponent in the most 
+// brackets
+function find_best_possible_pos_in_bracket(b, so_far, name) {
+  var bestj;
+  var bestj_brackets = 0;
+  for(var j = 0; j < bracket_size; ++j) {
+    if(brackets[b][j] == -1) {
+      var o = opponent(b, j);
+      var num_brackets_person_in = people[o] - (count_so_far(so_far, o) * 2);
+      if(num_brackets_person_in > bestj_brackets) {
+        bestj = j;
+        bestj_brackets = num_brackets_person_in;
+      }
+    }
+  }
+  return bestj;
+}
+
 function make_bracket() {
-  for(var iter = 0; iter < 20; ++iter) {
+  var best_brackets = [];
+  var best_brackets_missing = 1000000000;
+  var best_missing_names;
+  var missing_names = [];
+  var allowable_doubles_percentage = 0.0/8.0;
+  var doubles = 0;
+  people = make_people_array();
+  for(var iter = 0; iter < 40; ++iter) {    
     $('#log').html('');
-    
+    if(iter > 20) {
+      allowable_doubles_percentage = 1.0/bracket_size;
+    }
     initialize_brackets();
-    var people = make_people_array();
+    missing_names = [];
+    doubles = 0;
     
     for(name in people) {
       // log('name: '+name+', '+people[name]);
@@ -432,6 +480,34 @@ function make_bracket() {
           set_positions += 1;
         }
       }
+      
+      // if we couldn't fit this person into enough brackets, and adding them
+      // would still be under the allowable_doubles_percentage, then add then
+      // to the brackets they are missing 
+      var this_missing = (set_positions < people[name]);
+      if(this_missing) {
+        if(this_missing <= allowable_doubles_percentage * people[name]) {
+          for(var bi = 0; bi < randbrackets.length; ++bi) {
+            var b = randbrackets[bi];
+            if(!person_in_bracket(b, name)) {
+              var pos = find_best_possible_pos_in_bracket(b, so_far, name);
+              brackets[b][pos] = name;
+              var o = opponent(b, pos);
+              if(o != -1) {
+                so_far.push(o);
+              }
+              set_positions += 1;
+              doubles += 1;
+              
+              // TODO: remember doubles for display
+            }
+          }
+        }
+      }
+      
+      if(set_positions < people[name]) {
+        missing_names[name] = people[name] - set_positions;
+      }
       // TODO: if we couldn't get it so that they aren't ever
       // playing the same person twice, try for only playing one
       // person twice, etc
@@ -441,8 +517,6 @@ function make_bracket() {
   //     log(so_far);
     }
     
-    var numbrackets = $('#numbrackets').val();
-    var bracket_size = $('#bracket_size').val();
     var missing = 0;
     for(var i = 0; i < numbrackets; ++i) {
       for(var j = 0; j < bracket_size; ++j) {
@@ -452,13 +526,38 @@ function make_bracket() {
       }
     }
     
-    if(missing == 0) {
+    if(missing == 0 && doubles == 0) {
       break;
     }
+    
+    // if this is the best run so far, copy it incase
+    // its the best ever
+//     log('' + iter + ' ' + missing + ' ' + doubles + ' ' + (missing + (doubles/100)) + ' ' + best_brackets_missing);
+    if(missing + (doubles/100) < best_brackets_missing) {
+//       log('replacing');
+      best_brackets_missing = missing + (doubles/100);
+      for(var i = 0; i < numbrackets; ++i) {
+        best_brackets[i] = brackets[i].slice();
+      }
+      best_missing_names = missing_names;
+    }
+    for(name in missing_names) {
+      log(name + ': ' + missing_names[name]);
+    }
+//     log('');
+  }
+  
+  if(best_brackets_missing < missing) {
+    missing = best_brackets_missing;
+    brackets = best_brackets;
+    missing_names = best_missing_names.slice();
   }
   
   if(missing != 0) {
     log('MISSING: ' + missing);
+    for(name in missing_names) {
+      log(name + ': ' + missing_names[name]);
+    }
   }
   for(var i in brackets) {
     log('#'+(parseInt(i)+1));
