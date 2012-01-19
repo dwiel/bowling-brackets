@@ -178,7 +178,11 @@ function make_people_array() {
   var ppl = {};
   
   for(var i = 0; i < numpeople; ++i) {
-    ppl[$('#name'+i).html()] = parseInt($('#number'+i).val());
+    if($('#number'+i).val() == '') {
+      ppl[$('#name'+i).html()] = 0;
+    } else {
+      ppl[$('#name'+i).html()] = parseInt($('#number'+i).val());
+    }      
   }
 
   return ppl;
@@ -466,6 +470,7 @@ function make_bracket() {
     doubles = 0;
     
     for(name in people) {
+      // log();
       // log('name: '+name+', '+people[name]);
       
       // so_far is a list of opponents this person is already set to play - starts empty
@@ -493,13 +498,18 @@ function make_bracket() {
         }
       }
       
+      // log('sp '+set_positions);
+      
       // if we couldn't fit this person into enough brackets, and adding them
-      // would still be under the allowable_doubles_percentage, then add then
+      // would still be under the allowable_doubles_percentage, then add them
       // to the brackets they are missing 
       var this_missing = (set_positions < people[name]);
       if(this_missing) {
         if(this_missing <= allowable_doubles_percentage * people[name]) {
           for(var bi = 0; bi < randbrackets.length; ++bi) {
+            if(set_positions >= people[name]) {
+              break;
+            }
             var b = randbrackets[bi];
             if(!person_in_bracket(b, name)) {
               var pos = find_best_possible_pos_in_bracket(b, so_far, name);
@@ -523,10 +533,10 @@ function make_bracket() {
       // TODO: if we couldn't get it so that they aren't ever
       // playing the same person twice, try for only playing one
       // person twice, etc
-  //     log('name: '+name+', '+people[name]);
-  //     log('set_positions ('+set_positions+') >= people[name] ('+people[name]+')');
-  //     log('so_far');
-  //     log(so_far);
+      // log('name: '+name+', '+people[name]);
+      // log('set_positions ('+set_positions+') >= people[name] ('+people[name]+')');
+      // log('so_far');
+      // log(so_far);
     }
     
     var missing = 0;
@@ -544,9 +554,9 @@ function make_bracket() {
     
     // if this is the best run so far, copy it incase
     // its the best ever
-//     log('' + iter + ' ' + missing + ' ' + doubles + ' ' + (missing + (doubles/100)) + ' ' + best_brackets_missing);
+    log('' + iter + ' ' + missing + ' ' + doubles + ' ' + (missing + (doubles/100)) + ' ' + best_brackets_missing);
     if(missing + (doubles/100) < best_brackets_missing) {
-//       log('replacing');
+      log('replacing');
       best_brackets_missing = missing + (doubles/100);
       for(var i = 0; i < numbrackets; ++i) {
         best_brackets[i] = brackets[i].slice();
@@ -556,7 +566,7 @@ function make_bracket() {
     for(name in missing_names) {
       log(name + ': ' + missing_names[name]);
     }
-//     log('');
+    // log('');
   }
   
   if(best_brackets_missing < missing) {
@@ -571,10 +581,34 @@ function make_bracket() {
       log(name + ': ' + missing_names[name]);
     }
   }
+  // look for duplicates
+  var seen = {};
+  var dups = {};
+  for(var i in brackets) {
+    for(var j = 0; j < bracket_size / 2; ++j) {
+      var key = brackets[i][j*2]+'-'+brackets[i][j*2+1];
+      if(seen[key] == 1) {
+        if(dups[key] > 0) {
+          dups[key] += 1;
+        } else {
+          dups[key] = 1;
+        }
+      }
+      seen[key] = 1;
+    }
+  }  
+  
   for(var i in brackets) {
     log('#'+(parseInt(i)+1));
     for(var j = 0; j < bracket_size / 2; ++j) {
-      log('&nbsp;&nbsp;&nbsp;'+brackets[i][j*2]+' - '+brackets[i][j*2+1]);
+      var key = brackets[i][j*2]+'-'+brackets[i][j*2+1];
+      if(dups[key] > 0){
+        dup = '&nbsp;&nbsp;&nbsp;&nbsp;'+dups[key];
+      } else {
+        dup = '';
+      }
+
+      log('&nbsp;&nbsp;&nbsp;'+brackets[i][j*2]+' - '+brackets[i][j*2+1]+' '+dup);
     }
   }
 }
@@ -582,7 +616,7 @@ function make_bracket() {
 // to do this right, make a search space which covers all possible brackets and where you have gone, then ...
 
 $(document).ready(function () {
-  var names = ${c.names};
+  var names = ${str(c.names) | n};
   for(var i in names) {
     add_person(names[i]);
   }
